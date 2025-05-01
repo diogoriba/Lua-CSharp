@@ -26,12 +26,17 @@ public class LuaFunction(string name, Func<LuaFunctionExecutionContext, Memory<L
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (context.Thread.CallOrReturnHookMask.Value != 0 && !context.Thread.IsInHook)
             {
-                return await LuaVirtualMachine.ExecuteCallHook(context, buffer, cancellationToken);
+                var result1 = await LuaVirtualMachine.ExecuteCallHook(context, buffer, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                return result1;
             }
 
-            return await Func(context, buffer, cancellationToken);
+            var result2 = await Func(context, buffer, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            return result2;
         }
         finally
         {
